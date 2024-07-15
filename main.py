@@ -14,7 +14,6 @@ import os
 # Optional: add contact me email functionality (Day 60)
 # import smtplib
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 ckeditor = CKEditor(app)
@@ -30,7 +29,7 @@ def load_user(user_id):
     return db.get_or_404(User, user_id)
 
 
-# To add profile images to the comment section
+# For adding profile images to the comment section
 gravatar = Gravatar(app,
                     size=100,
                     rating='g',
@@ -40,13 +39,10 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None)
 
-
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('POSTS_DB', 'sqlite:///posts.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -151,11 +147,13 @@ def login():
     if form.validate_on_submit():
         password = form.password.data
         result = db.session.execute(db.select(User).where(User.email == form.email.data))
-        # email in db is unique so will only have one result.
+        # Note, email in db is unique so will only have one result.
         user = result.scalar()
+        # Email doesn't exist
         if not user:
             flash("That email does not exist, please try again.")
             return redirect(url_for('login'))
+        # Password incorrect
         elif not check_password_hash(user.password, password):
             flash('Password incorrect, please try again.')
             return redirect(url_for('login'))
